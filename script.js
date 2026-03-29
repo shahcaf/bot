@@ -1,28 +1,23 @@
-// Initialize Lucide icons
-lucide.createIcons();
-
-// Smooth scroll animations on scroll
-const reveals = document.querySelectorAll('.reveal');
-
-const revealElements = () => {
-    reveals.forEach(element => {
-        const windowHeight = window.innerHeight;
-        const revealTop = element.getBoundingClientRect().top;
-        const revealPoint = 100;
-
-        if (revealTop < windowHeight - revealPoint) {
-            element.classList.add('visible');
+// Intersection Observer for Scroll Reveals
+const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            // Once revealed, we can stop observing this element
+            revealObserver.unobserve(entry.target);
         }
     });
-};
+}, {
+    threshold: 0.15,
+    rootMargin: '0px 0px -50px 0px'
+});
 
-// Also trigger on first load
-window.addEventListener('load', revealElements);
-window.addEventListener('scroll', revealElements);
+document.querySelectorAll('.reveal').forEach(element => {
+    revealObserver.observe(element);
+});
 
 // Navbar logic
 const navbar = document.getElementById('navbar');
-
 window.addEventListener('scroll', () => {
     if (window.scrollY > 50) {
         navbar.classList.add('scrolled');
@@ -31,26 +26,49 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Add dynamic delay to feature cards for "staggered" appearance
-const featureCards = document.querySelectorAll('.feature-card');
-featureCards.forEach((card, index) => {
-    card.style.transitionDelay = `${(index % 3) * 0.1}s`;
-});
+// Dynamic staggered delay for all cards
+const setStaggeredDelay = (selector, baseDelay = 0.1) => {
+    document.querySelectorAll(selector).forEach((card, index) => {
+        card.style.transitionDelay = `${(index % 4) * baseDelay}s`;
+    });
+};
 
-// Mobile menu placeholder (optional enhancement)
-// For a premium feel, even a simple mobile interaction helps
-const logo = document.querySelector('.logo');
-logo.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+setStaggeredDelay('.feature-card');
+setStaggeredDelay('.server-card-mini', 0.15);
+setStaggeredDelay('.step-card', 0.2);
 
-// Subtle parallax effect on hero glass card
+// Parallax Effect for Hero glass card
 document.addEventListener('mousemove', (e) => {
     const glassCard = document.querySelector('.main-card');
     if (!glassCard) return;
 
-    const mouseX = e.clientX / window.innerWidth - 0.5;
-    const mouseY = e.clientY / window.innerHeight - 0.5;
+    const { clientX, clientY } = e;
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    
+    const moveX = (clientX - centerX) / 25;
+    const moveY = (clientY - centerY) / 25;
 
-    glassCard.style.transform = `perspective(1000px) rotateY(${mouseX * 10}deg) rotateX(${-mouseY * 10}deg) translateY(${Math.sin(Date.now() / 1000) * 5}px)`;
+    glassCard.style.transform = `perspective(1000px) rotateY(${moveX}deg) rotateX(${-moveY}deg) translateY(${Math.sin(Date.now() / 1500) * 8}px)`;
 });
+
+// Smooth logo & back-to-top scroll
+const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+document.querySelector('.logo').addEventListener('click', scrollToTop);
+const backToTopBtn = document.getElementById('backToTop');
+backToTopBtn.addEventListener('click', scrollToTop);
+
+// Show/hide backToTop button on scroll
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 300) {
+        backToTopBtn.classList.add('visible');
+    } else {
+        backToTopBtn.classList.remove('visible');
+    }
+});
+
+// Initialize Lucide icons
+lucide.createIcons();
